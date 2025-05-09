@@ -9,12 +9,11 @@
 */
 
 // ===== 模組導入 =====
-// Next.js的圖片優化組件，使用示例：
-// <Image src="/example.jpg" width={500} height={300} alt="示例圖片"/>
-import Image from "next/image";
+
+import Link from "next/link";
 
 // React的useState Hook用於狀態管理
-import { useState } from "react";
+import { use, useEffect,useState } from "react";
 
 // 導入自定義組件，使用@表示從根目錄開始的絕對路徑
 // @ 是Next.js的路徑別名，指向src目錄
@@ -28,22 +27,43 @@ export default function Home() {
   
   // 任務列表狀態管理
   // 示例：tasks = ['學習React', '學習Next.js']
-  const[tasks,setTasks]=useState([]);
+  const [tasks,setTasks] = useState([]);
   
   // 新任務輸入框狀態管理
   // 示例：newTask = '完成作業'
-  const [newTask,setNewTask]=useState('');
+  const [newTask,setNewTask] = useState('');
 
+  const [nextId,setNextId]=useState(1);
   // ===== 事件處理函數 =====
+  useEffect(() => {
+    const saveTasks=JSON.parse(localStorage.getItem('tasks'))||[];
+    setNewTask(saveTasks);
+    const maxId=saveTasks.reduce((max,task)=>Math.max(max,task.id),0);
+    setNextId(maxId+1);
+  },[]);
+  const handleDelete=(index)=>{
+    const newTasks =tasks.filter((_,i)=>i!==index);
+    setTasks(newTasks);
+    console.log("After:",newTasks);
+    localStorage.setItem('tasks',JSON.stringify(newTasks));
+  }
+  
   const addTask=()=>{
-    // 開發時的狀態追踪
+    // 開發時的狀態追踪在console中輸出
     console.log("Before:",tasks);
     console.log("NewTask:",newTask);
-
+    const newTaskObj={// 創建新任務對象
+      // 使用nextId作為任務ID
+      // 這樣可以確保每個任務都有唯一的ID
+      // ID是數字類型，從1開始遞增
+      id:nextId,
+      title:newTask,
+      description:''
+    };
     // 使用展開運算符(...)創建新數組
     // 示例：如果 tasks = ['任務1'] 且 newTask = '任務2'
     // 則 updateTasks = ['任務1', '任務2']
-    const updateTasks=[...tasks,newTask];
+    const updateTasks=[...tasks,newTaskObj];
     
     // 更新狀態，React會重新渲染組件
     setTasks(updateTasks);
@@ -51,15 +71,18 @@ export default function Home() {
     
     // 重置輸入框
     setNewTask('');
+    setNextId(nextId+1);// 更新下一個任務ID
+    localStorage.setItem('tasks',JSON.stringify(updateTasks));
+    // 將任務列表存儲到本地存儲
   }
 
   // ===== JSX 模板渲染 =====
   return (
     // Tailwind CSS類名使用示例：
     // p-4: padding: 1rem
-    <main className="p-4">
+    <main className="p-4 max-w-md mx-auto">
       {/* 標題區塊 */}
-      <h1 className="text-2xl font-blod">Task Board</h1>
+      <h1 className="text-4xl font-blod">Task Board</h1>
 
       {/* 輸入區塊：使用flex布局 */}
       <div className="flex gap-2 mb-4">
@@ -73,6 +96,7 @@ export default function Home() {
           className="border p-2 flex-1"
           placeholder="Enter a tash"
           value={newTask}
+         
           onChange={(e)=>setNewTask(e.target.value)}
         />
 
@@ -84,7 +108,7 @@ export default function Home() {
           className="bg-blue-500 text-while px-4"
           onClick={addTask}
         >
-          Add
+          Add task
         </button>
       </div>
 
@@ -95,7 +119,7 @@ export default function Home() {
         示例：如果tasks=['任務1', '任務2']
         則TaskList組件會收到這個數組作為props.task
       */}
-      <TaskList task={tasks}/>
+      <TaskList tasks={tasks} onDelete={handleDelete}/>
     </main>
   );
 }
