@@ -13,7 +13,7 @@
 import Link from "next/link";
 
 // React的useState Hook用於狀態管理
-import { use, useEffect,useState } from "react";
+import { useEffect,useState } from "react";
 
 // 導入自定義組件，使用@表示從根目錄開始的絕對路徑
 // @ 是Next.js的路徑別名，指向src目錄
@@ -37,15 +37,16 @@ export default function Home() {
   // ===== 事件處理函數 =====
   useEffect(() => {
     const saveTasks=JSON.parse(localStorage.getItem('tasks'))||[];
-    setNewTask(saveTasks);
+    setTasks(saveTasks);
     const maxId=saveTasks.reduce((max,task)=>Math.max(max,task.id),0);
     setNextId(maxId+1);
   },[]);
-  const handleDelete=(index)=>{
-    const newTasks =tasks.filter((_,i)=>i!==index);
-    setTasks(newTasks);
-    console.log("After:",newTasks);
-    localStorage.setItem('tasks',JSON.stringify(newTasks));
+  const handleDelete=(taskId)=>{
+    const index = tasks.findIndex(task => task.id === taskId);
+    const updateTasks =tasks.filter((_,i)=>i!==index);
+    setTasks(updateTasks);
+    console.log("After:",updateTasks);
+    localStorage.setItem('tasks',JSON.stringify(updateTasks));
   }
   
   const addTask=()=>{
@@ -94,7 +95,7 @@ export default function Home() {
         */}
         <input
           className="border p-2 flex-1"
-          placeholder="Enter a tash"
+          placeholder="Enter a task"
           value={newTask}
          
           onChange={(e)=>setNewTask(e.target.value)}
