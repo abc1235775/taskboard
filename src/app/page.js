@@ -1,126 +1,107 @@
-// ===== Next.js 客戶端組件聲明 =====
 'use client';
-/* 
-  'use client' 指令告訴Next.js這是一個客戶端組件
-  這允許我們使用React的互動特性，如：
-  - useState, useEffect 等 Hooks
-  - onClick 等事件處理器
-  - 瀏覽器API
-*/
 
-// ===== 模組導入 =====
+import { useEffect, useState } from "react";
 
-import Link from "next/link";
+// 台灣縣市清單
+const taiwanCities = [
+  "基隆市", "台北市", "新北市", "桃園市", "新竹市", "新竹縣",
+  "苗栗縣", "台中市", "彰化縣", "南投縣", "雲林縣",
+  "嘉義市", "嘉義縣", "台南市", "高雄市", "屏東縣",
+  "宜蘭縣", "花蓮縣", "台東縣", "澎湖縣", "金門縣", "連江縣"
+];
 
-// React的useState Hook用於狀態管理
-import { useEffect,useState } from "react";
+// 對應縣市的代表圖片（可替換為自己圖庫或公共 CDN）
+const cityImages = { 
+"台北市": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Taipei_101_from_Xiangshan_20240729.jpg/250px-Taipei_101_from_Xiangshan_20240729.jpg", 
+"新北市": 
+"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/2018_Christmasland_in_New_Taipei%2C_Taiwan.jpg/330px-2018_Christmasland_in_New_Taipei%2C_Taiwan.jpg ", 
+"基隆市":
+"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Superstar_Aquarius_and_Keelung_Cultural_Center_at_night_20181106.jpg/330px-Superstar_Aquarius_and_Keelung_Cultural_Center_at_night_20181106.jpg ", 
+"桃園市": " https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Qingpu%2C_Taoyuan_City_Skyline_2024.jpg/330px-Qingpu%2C_Taoyuan_City_Skyline_2024.jpg ", 
+"新竹市": " https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/TRA_Hsinchu_Station.jpg/330px-TRA_Hsinchu_Station.jpg ", 
+"台中市": " https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Taiwan_Boulevard.jpg/330px-Taiwan_Boulevard.jpg ", 
+"台南市": " https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/%E5%AE%89%E5%B9%B3%E5%8F%A4%E5%A0%A1%E4%B9%8B%E7%BE%8E.jpg/330px-%E5%AE%89%E5%B9%B3%E5%8F%A4%E5%A0%A1%E4%B9%8B%E7%BE%8E.jpg ", 
+"高雄市": " https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Kaohsiung_Skyline_2020_%28cropped%29.jpg/330px-Kaohsiung_Skyline_2020_%28cropped%29.jpg ", 
+"花蓮縣": " https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/2004.02.01.%E4%B8%83%E6%98%9F%E6%BD%AD_-_panoramio.jpg/330px-2004.02.01.%E4%B8%83%E6%98%9F%E6%BD%AD_-_panoramio.jpg ", 
+"台東縣": " https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/%E6%9D%B1%E6%B5%B7%E5%B2%B8%E7%9A%84%E9%A2%A8%E6%99%AF_%E5%B0%8F%E9%87%8E%E6%9F%B3_%28cropped%29.jpg/330px-%E6%9D%B1%E6%B5%B7%E5%B2%B8%E7%9A%84%E9%A2%A8%E6%99%AF_%E5%B0%8F%E9%87%8E%E6%9F%B3_%28cropped%29.jpg ", 
+"屏東縣": " https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Hengchun-CHO_YEN_CHIA-IMG_1665.jpg/330px-Hengchun-CHO_YEN_CHIA-IMG_1665.jpg ", 
+"宜蘭縣": " https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/%E5%86%AC%E5%B1%B1%E6%B2%B3_%E5%88%A9%E6%BE%A4%E7%B0%A1%E6%A9%8B_DJI-0162_%28cropped%29.jpg/330px-%E5%86%AC%E5%B1%B1%E6%B2%B3_%E5%88%A9%E6%BE%A4%E7%B0%A1%E6%A9%8B_DJI-0162_%28cropped%29.jpg " ,
+"苗栗縣":" https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/龍騰斷橋--張利聰.jpg/330px-龍騰斷橋--張利聰.jpg ",
+"新竹縣":" https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Building_of_Taiwan_Semiconductor_Manufacturing_Fab_12B_at_night.jpg/330px-Building_of_Taiwan_Semiconductor_Manufacturing_Fab_12B_at_night.jpg ",
+"彰化縣":" https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/八卦山大佛風景區_(cropped).jpg/330px-八卦山大佛風景區_(cropped).jpg ",
+"南投縣":" https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/埔里盆地_(cropped).jpg/330px-埔里盆地_(cropped).jpg ",
+"雲林縣":" https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/西螺大橋_(cropped).jpg/330px-西螺大橋_(cropped).jpg ",
+"嘉義市":" https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/嘉義市區夜景鳥瞰.jpg/330px-嘉義市區夜景鳥瞰.jpg ",
+"嘉義縣":" https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Jushan_sunrise_02.jpg/330px-Jushan_sunrise_02.jpg ",
+"澎湖縣":" https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Penghu_Great_Bridge.jpg/330px-Penghu_Great_Bridge.jpg ",
+"金門縣":" https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/太武山_-_毋忘在莒.jpg/330px-太武山_-_毋忘在莒.jpg ",
+"連江縣":" https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/山仔水库_-_Shanzai_Reservoir_-_2015.03_-_panoramio.jpg/250px-山仔水库_-_Shanzai_Reservoir_-_2015.03_-_panoramio.jpg "
+};
 
-// 導入自定義組件，使用@表示從根目錄開始的絕對路徑
-// @ 是Next.js的路徑別名，指向src目錄
-import TaskList from "@/components/TaskList";
-
-// ===== 組件定義 =====
-// Next.js中，app/page.js是默認路由頁面，對應網站的根路徑'/'
 export default function Home() {
-  // ===== React Hooks使用 =====
-  // useState Hook的基本語法：const [狀態, 設定狀態的函數] = useState(初始值)
-  
-  // 任務列表狀態管理
-  // 示例：tasks = ['學習React', '學習Next.js']
-  const [tasks,setTasks] = useState([]);
-  
-  // 新任務輸入框狀態管理
-  // 示例：newTask = '完成作業'
-  const [newTask,setNewTask] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
 
-  const [nextId,setNextId]=useState(1);
-  // ===== 事件處理函數 =====
   useEffect(() => {
-    const saveTasks=JSON.parse(localStorage.getItem('tasks'))||[];
-    setTasks(saveTasks);
-    const maxId=saveTasks.reduce((max,task)=>Math.max(max,task.id),0);
-    setNextId(maxId+1);
-  },[]);
-  const handleDelete=(taskId)=>{
-    const index = tasks.findIndex(task => task.id === taskId);
-    const updateTasks =tasks.filter((_,i)=>i!==index);
-    setTasks(updateTasks);
-    console.log("After:",updateTasks);
-    localStorage.setItem('tasks',JSON.stringify(updateTasks));
-  }
-  
-  const addTask=()=>{
-    // 開發時的狀態追踪在console中輸出
-    console.log("Before:",tasks);
-    console.log("NewTask:",newTask);
-    const newTaskObj={// 創建新任務對象
-      // 使用nextId作為任務ID
-      // 這樣可以確保每個任務都有唯一的ID
-      // ID是數字類型，從1開始遞增
-      id:nextId,
-      title:newTask,
-      description:''
-    };
-    // 使用展開運算符(...)創建新數組
-    // 示例：如果 tasks = ['任務1'] 且 newTask = '任務2'
-    // 則 updateTasks = ['任務1', '任務2']
-    const updateTasks=[...tasks,newTaskObj];
-    
-    // 更新狀態，React會重新渲染組件
-    setTasks(updateTasks);
-    console.log("After:",updateTasks);
-    
-    // 重置輸入框
-    setNewTask('');
-    setNextId(nextId+1);// 更新下一個任務ID
-    localStorage.setItem('tasks',JSON.stringify(updateTasks));
-    // 將任務列表存儲到本地存儲
-  }
+    const savedCity = localStorage.getItem('selectedCity');
+    if (savedCity) setSelectedCity(savedCity);
+  }, []);
 
-  // ===== JSX 模板渲染 =====
+  useEffect(() => {
+    if (selectedCity) {
+      localStorage.setItem('selectedCity', selectedCity);
+    }
+  }, [selectedCity]);
+
   return (
-    // Tailwind CSS類名使用示例：
-    // p-4: padding: 1rem
-    <main className="p-4 max-w-md mx-auto">
-      {/* 標題區塊 */}
-      <h1 className="text-4xl font-blod">Task Board</h1>
+    <main className="min-h-screen bg-gradient-to-br from-yellow-50 via-rose-100 to-emerald-100 flex items-center justify-center p-6">
+      <div className="w-full max-w-md bg-white border-4 border-rose-300 rounded-2xl shadow-2xl p-6">
+        <h1 className="text-4xl font-extrabold text-center text-rose-600 mb-4">
+          🇹🇼 請選擇目的地
+        </h1>
 
-      {/* 輸入區塊：使用flex布局 */}
-      <div className="flex gap-2 mb-4">
-        {/* 
-          受控輸入組件：
-          - value綁定到state
-          - onChange事件更新state
-          示例：輸入"Hello"會觸發setNewTask("Hello")
-        */}
-        <input
-          className="border p-2 flex-1"
-          placeholder="Enter a task"
-          value={newTask}
-         
-          onChange={(e)=>setNewTask(e.target.value)}
-        />
+        <p className="text-center text-sm text-gray-500 mb-6">
+          請選擇你所在的縣市，探索台灣之美 🌏
+        </p>
 
-        {/* 
-          按鈕事件處理：
-          onClick={函數名} 或 onClick={() => 函數()}
-        */}
-        <button 
-          className="bg-blue-500 text-while px-4"
-          onClick={addTask}
+        <label htmlFor="city-select" className="block mb-2 text-green-800 font-semibold text-lg">
+          選擇縣市：
+        </label>
+        <select
+          id="city-select"
+          className="w-full border-2 border-green-300 rounded-lg p-2 bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 text-green-900"
+          value={selectedCity}
+          onChange={(e) => setSelectedCity(e.target.value)}
         >
-          Add task
-        </button>
-      </div>
+          <option value="">-- 請選擇縣市 --</option>
+          {taiwanCities.map((city) => (
+            <option key={city} value={city}>{city}</option>
+          ))}
+        </select>
 
-      {/* 
-        組件Props傳遞：
-        - 父組件向子組件傳遞數據
-        - 語法：<組件名 屬性名={值}>
-        示例：如果tasks=['任務1', '任務2']
-        則TaskList組件會收到這個數組作為props.task
-      */}
-      <TaskList tasks={tasks} onDelete={handleDelete}/>
+        {/* 顯示選擇結果 */}
+        <div className="mt-8 text-center text-xl font-medium text-blue-800">
+          {selectedCity ? `你選擇的是：${selectedCity} 🎉` : "尚未選擇縣市"}
+        </div>
+
+        {/* 顯示對應圖片 */}
+        {selectedCity && cityImages[selectedCity] && (
+          <div className="mt-6 flex flex-col items-center gap-4">
+            <img
+              src={cityImages[selectedCity]}
+              alt={`${selectedCity} 圖片`}
+              className="rounded-xl shadow-md max-h-64 object-cover"
+            />
+            <button
+              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              onClick={() => {
+                window.location.href = `/task?city=${selectedCity}`;
+              }}
+            >
+              前往 {selectedCity} 的觀光資訊
+            </button>
+          </div>
+        )}
+      </div>
     </main>
   );
 }
